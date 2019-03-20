@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Captura de datos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+    integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+    crossorigin=""/>
+     <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+    integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+    crossorigin=""></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Pantalla de captura de polígonos </h1>
+    <p id="debug">debug:</p>
+    <button id="agregarBtn" style="display:inline-block">Agregar</button>
+    <button id="borrarBtn" style="display:inline-block">Borrar</button>
+    <button id="enviarBtn" style="display:inline-block">Enviar a Python</button>
+    <button id="debugBtn" style="display:inline-block">Imprimir</button>
+    <input id="numComuna" type="number" placeholder="0" value="0"/>
+    <div id="mapid" style="height: 600px"></div>
+
+    <script>
+        
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var mymap = L.map('mapid').setView([7.11392, -73.1198], 13); //Bucaramanga center
+        var popup = L.popup();
+
+        var comuna = new Array();
+        var numero = 0;
+
+        var latlng = 0;
+
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox.streets',
+            accessToken: 'pk.eyJ1IjoibHVkdGhvciIsImEiOiJjanRiejl5eTYwcjdrNDlwNHRwN2R1YzA2In0.jT7CUgIrngoHdJr3yYvKnQ'
+        }).addTo(mymap);
+
+        function onMapClick(e) {
+            popup
+            .setLatLng(e.latlng)
+            .setContent("Coordenadas: " + e.latlng.toString())
+            .openOn(mymap);
+            latlng =  e.latlng.lat + " # " + e.latlng.lng;
+
+        }
+
+        mymap.on('click', onMapClick);
+
+        document.getElementById('agregarBtn').addEventListener('click', (event) =>{
+            comuna.push(latlng);
+        });
+
+        document.getElementById('borrarBtn').addEventListener('click', (event) =>{
+            comuna.pop();
+        });
+
+        document.getElementById('debugBtn').addEventListener('click', (event) =>{
+            document.getElementById("debug").append(comuna)
+        });
+        document.getElementById('enviarBtn').addEventListener('click', (event) =>{
+            numero = document.getElementById('numComuna').value;
+            if(numero == 0){
+                alert("El número de comuna no puede ser 0");
+                return;
+            }
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.status == 200) {
+                    console.log("Petición enviada con éxito");
+                }
+            };
+
+            var data  = new FormData();
+            data.append('list' , comuna)
+            data.append('comuna', numero)
+
+            xhttp.open("POST", "/captura" , true)
+            xhttp.send(data);
+
+            comuna = new Array()
+
+        });
+
+        //Sockets Logic (Buggy)
+        socket.on( 'connect', function() {
+            socket.emit('my_event', {
+                data: 'Connection test'
+            });
+        });
+
+        socket.on('draw_comuna', function(msg){
+            console.log(msg);
+
+            msg.forEach((e) => {
+                console.log(e);
+                var layer = L.polygon([e],{color: "#ff0000", weight: 1}).addTo(mymap);
+                layer.addTo(mymap);
+            });
+        })
+    </script>
+</body>
+</html>

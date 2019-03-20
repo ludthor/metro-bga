@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Estaciones MetroBga</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+    integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+    crossorigin=""/>
+
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+    integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+    crossorigin=""></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+        <style>
+                .fa {
+                  padding: 20px;
+                  font-size: 40px;
+                  width: 80px;
+                  text-align: center;
+                  text-decoration: none;
+                  margin: 5px 10px;
+                  border-radius: 50%;
+                }
+                
+                .fa:hover {
+                    opacity: 0.7;
+                }
+                
+                .fa-facebook {
+                  background: #3B5998;
+                  color: white;
+                }
+                
+                .fa-twitter {
+                  background: #55ACEE;
+                  color: white;
+                }
+                
+                .fa-instagram {
+                  background: #125688;
+                  color: white;
+                }
+                </style>
+    <div class="container">
+        <div class="row">
+            <div class="jumbotron jumbotron-fluid col-12 shadow p-2 mb-5 bg-primary rounded">
+                <div class="container h-100">
+                    <div class="row align-middle">
+                        <div class="col-4 align-middle">
+                            <img height="150px" width="150px" src="{{url_for('static',filename='mb_re.png')}}" alt="logo"/>
+                        </div>
+                        <div class="col-8">
+                            <h2 class="display-5 text-monospace text-right p-2">Proyecto MetroBGA</h2>
+                            <p class="lead text-monospace text-right p-2">Proyecto de planeación automatizada de las líneas del Metro de la ciudad de Bucaramanga</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row p-1 ">
+            <article class="col-5 rounded-sm shadow p-3 mb-5 bg-white rounded"> 
+                <h2 class="pb-3">¡Bucaramanga necesita un metro urgentemente!</h2>
+                <p class="pb-2">Bucaramanga, con sus más de 500.000 habitantes merecen una solución real y escalable a sus problemas de movilidad.</p>              
+                <p class="pb-2">El proyecto MetroBGA pretende crear un cambio en la mentalidad de los ciudadanos, para tomar la iniciativa de crear soluciones de calidad que se puedan materializar a través de la acción política directa </p>
+                <!-- Social media icons -->
+                <a href="#" class="fa fa-facebook"></a>
+                <a href="#" class="fa fa-twitter"></a>
+                <a href="#" class="fa fa-instagram"></a>
+            </article>
+            <div class="col-1"> </div>
+            <div class="col-6 shadow p-3 mb-5 bg-white rounded" id="mymap" style="height:400px; width:400px"></div>
+        </div>
+        <div class="row shadow p-3 mb-5 bg-primary rounded h-100">
+            <footer>
+                    <p class="text-monospace text-right">Desarrollado por: Ariel Ortiz Beltrán @ludthor</p>
+            </footer>
+        </div>
+    </div>
+    <script>
+        var accessToken = 'pk.eyJ1IjoibHVkdGhvciIsImEiOiJjanRiejl5eTYwcjdrNDlwNHRwN2R1YzA2In0.jT7CUgIrngoHdJr3yYvKnQ';
+        var mymap = L.map('mymap').setView([7.11392, -73.1198], 13);
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox.streets',
+            accessToken: accessToken
+        }).addTo(mymap);
+
+        var centers = {{objret.centers}};
+        var roads = {{objret.roads}};
+
+        console.log(centers);
+        console.log(roads);
+        var i = 0;
+        centers.forEach(function(center){
+            i++;
+            console.log("El centro está ubicado en: " + center)
+            var marker = L.marker([center[0],center[1]]).addTo(mymap);
+            marker.bindPopup("<b>Estación</b>" + i).openPopup();
+        });
+
+        
+        roads.forEach(function(road){
+            console.log(centers[road]);
+            var latlngs = [
+                [centers[road[0]][0],centers[road[0]][1]],
+                [centers[road[1]][0],centers[road[1]][1]]
+            ];
+            var polyline = L.polyline(latlngs, {color: 'red'}).addTo(mymap);
+            mymap.fitBounds(polyline.getBounds());
+        });
+    </script>
+</body>
+</html>
